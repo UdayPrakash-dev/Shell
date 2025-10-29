@@ -16,3 +16,17 @@ void parse_command(char *input, char **args)
     //     printf("\n%s\n\n", args[i]);
     // }
 }
+
+
+int parse_pipe(char *input,char **commands){
+  int i = 0;
+  char *command = strtok(input, "|");
+
+  while(command != NULL && i< MAX_PIPE_COMMANDS -1){
+    commands[i++] = command;
+    command = strtok(NULL, "|");
+  }
+
+  commands[i] = NULL;
+  return i;
+}

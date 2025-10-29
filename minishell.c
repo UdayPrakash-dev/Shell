@@ -16,42 +16,74 @@
 
 int main()
 {
-    char input[MAX_INPUT];
-    char *args[MAX_ARGS];
+  char input[MAX_INPUT];
+  char *args[MAX_ARGS];
+  char *commands[MAX_PIPE_COMMANDS];
 
-    while (1)
-    {
+  while (1)
+  {
         // Print prompt
-        printf("Enigma> ");
-        fflush(stdout);
+    printf("Enigma> ");
+    fflush(stdout);
 
         // Read input
-        read_command(input);
+    read_command(input);
 
-        // Parse input
-        parse_command(input, args);
+    int num_cmds = parse_pipe(input,commands);
 
-        // Empty input → skip
-        if (args[0] == NULL)
-            continue;
+    if(commands[0]== NULL || num_cmds == 0){
+      continue; 
+    } 
 
-        // Built-in: exit
-        if (strcmp(args[0], "exit") == 0)
-        {
-            printf("Exiting shell... bye!\n");
-            break;
-        }
+    if(num_cmds == 1){
+      parse_command(commands[0],args);
 
-        // Built-in: cd
-        if (strcmp(args[0], "cd") == 0)
-        {
-            change_directory(args);
-            continue;
-        }
+      if(args[0]==NULL){
+        continue;
+      }
 
-        // Otherwise, execute external command
-        execute_command(args);
+      if(strcmp(args[0],"exit")==0){
+        printf("Bye!\n");
+        break;
+      }
+
+      if(strcmp(args[0],"cd")==0){
+        change_directory(args);
+        continue;
+      }
+
+      execute_command(args);
     }
 
-    return 0;
+    else if(num_cmds > 1){
+      execute_pipeline(commands,num_cmds);
+    }
+  }
+
+  return 0;
+        // Parse input
+    //     parse_command(input, args);
+    //
+    //     // Empty input → skip
+    //     if (args[0] == NULL)
+    //         continue;
+    //
+    //     // Built-in: exit
+    //     if (strcmp(args[0], "exit") == 0)
+    //     {
+    //         printf("Exiting shell... bye!\n");
+    //         break;
+    //     }
+    //
+    //     // Built-in: cd
+    //     if (strcmp(args[0], "cd") == 0)
+    //     {
+    //         change_directory(args);
+    //         continue;
+    //     }
+    //
+    //     // Otherwise, execute external command
+    //     execute_command(args);
+    // }
+
 }
