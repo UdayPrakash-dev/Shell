@@ -1,0 +1,13 @@
+# Executables
+Enigma
+test
+
+# Object files
+*.o
+
+# Test/temp files
+hi
+test.c
+
+# Shell output files
+*.txt

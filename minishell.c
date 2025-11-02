@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
 #include "shell.h"
 
 #define MAX_INPUT 1024
@@ -19,6 +14,9 @@ int main()
   char input[MAX_INPUT];
   char *args[MAX_ARGS];
   char *commands[MAX_PIPE_COMMANDS];
+  int append = 0;
+  char *outfile = NULL;
+  char *infile = NULL;
 
   while (1)
   {
@@ -36,7 +34,7 @@ int main()
     } 
 
     if(num_cmds == 1){
-      parse_command(commands[0],args);
+      parse_command(commands[0],args,&infile,&outfile,&append);
 
       if(args[0]==NULL){
         continue;
@@ -46,13 +44,13 @@ int main()
         printf("Bye!\n");
         break;
       }
-
-      if(strcmp(args[0],"cd")==0){
-        change_directory(args);
-        continue;
-      }
-
-      execute_command(args);
+    //
+    //   if(strcmp(args[0],"cd")==0){
+    //     change_directory(args);
+    //     continue;
+    //   }
+    //
+      execute_command(args,infile,outfile,append);
     }
 
     else if(num_cmds > 1){
@@ -84,6 +82,5 @@ int main()
     //
     //     // Otherwise, execute external command
     //     execute_command(args);
-    // }
-
 }
+
