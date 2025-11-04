@@ -17,14 +17,14 @@ int main()
   int append = 0;
   char *outfile = NULL;
   char *infile = NULL;
-
+  int background;
+  signal(SIGCHLD,handle_signals);
   while (1)
   {
-        // Print prompt
+    background = 0;
     printf("Enigma> ");
     fflush(stdout);
 
-        // Read input
     read_command(input);
 
     int num_cmds = parse_pipe(input,commands);
@@ -34,7 +34,7 @@ int main()
     } 
 
     if(num_cmds == 1){
-      parse_command(commands[0],args,&infile,&outfile,&append);
+      parse_command(commands[0],args,&infile,&outfile,&append,&background);
 
       if(args[0]==NULL){
         continue;
@@ -44,13 +44,20 @@ int main()
         printf("Bye!\n");
         break;
       }
-    //
-    //   if(strcmp(args[0],"cd")==0){
-    //     change_directory(args);
-    //     continue;
-    //   }
-    //
-      execute_command(args,infile,outfile,append);
+
+      if(strcmp(args[0],"wait")==0){
+        while(waitpid(-1,NULL,0)>0){
+
+        }
+        continue;
+      }
+
+      if(strcmp(args[0],"cd")==0){
+        change_directory(args);
+        continue;
+      }
+
+      execute_command(args,infile,outfile,append,background);
     }
 
     else if(num_cmds > 1){

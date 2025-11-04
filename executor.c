@@ -29,6 +29,7 @@
 void execute_pipeline(char **commands, int num_cmds){
   int fd[2];
   int input_fd = 0; 
+  pid_t pids[num_cmds];
   
   for(int i = 0; i < num_cmds; i++){
 
@@ -41,8 +42,9 @@ void execute_pipeline(char **commands, int num_cmds){
     char *infile = NULL;
     char *outfile = NULL;
     int append = 0;
+    int background = 0;
     
-    parse_command(commands[i], args, &infile, &outfile, &append);
+    parse_command(commands[i], args, &infile, &outfile, &append,&background);
 
     if (args[0] == NULL) {
         fprintf(stderr, "shell: syntax error in pipe\n");
@@ -98,6 +100,7 @@ void execute_pipeline(char **commands, int num_cmds){
         exit(1);
       }
     } else {
+      pids[i] = pid;
       close(fd[1]);
       if(input_fd != 0){
         close(input_fd);
@@ -109,10 +112,16 @@ void execute_pipeline(char **commands, int num_cmds){
     close(input_fd);
   }
   for(int i = 0; i < num_cmds; i++){
-    wait(NULL);
+    if(waitpid(pids[i],NULL,0)==-1){
+      if(errno == ECHILD){
+        break;
+      }else{
+        perror("waitpid failed");
+      }
+    }
   }
 }
-void execute_command(char **args,char *infile,char *outfile,int append){
+void execute_command(char **args,char *infile,char *outfile,int append,int background){
   pid_t pid = fork();
   if(pid == 0){
 
@@ -143,7 +152,18 @@ void execute_command(char **args,char *infile,char *outfile,int append){
     }
     exit(1);
   }else{
-    int status;
-    waitpid(pid,&status,0);
+    if(background == 0){
+      int status;
+      waitpid(pid,&status,0);
+    }else{
+      printf("Process [%d] started in background.\n",pid);
+    }
   }
+}
+
+void handle_signals(int sig){
+  while(waitpid(-1,NULL,WNOHANG)>0){
+
+  }
+
 }
