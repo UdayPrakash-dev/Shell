@@ -22,7 +22,15 @@ int main()
   while (1)
   {
     background = 0;
-    printf("Enigma> ");
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL)
+    {
+      printf("Enigma:%s> ", cwd);
+    }
+    else
+    {
+      perror("getcwd failed");
+    }
     fflush(stdout);
 
     read_command(input);
