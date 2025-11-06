@@ -175,7 +175,14 @@ int execute_command(char **args,char *infile,char *outfile,int append,int backgr
   }else{
     if(background == 0){
       int status;
-      waitpid(pid,&status,0);
+      if(waitpid(pid,&status,0)==-1){
+        if(errno == ECHILD){
+          return 0;
+        }else{
+          perror("waitpid failed\n");
+          return 1;
+        }
+      };
 
       if(WIFEXITED(status)){
         return WEXITSTATUS(status);
