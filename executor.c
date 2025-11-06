@@ -26,7 +26,7 @@
 //     }
 // }
 //
-void execute_pipeline(char **commands, int num_cmds){
+int execute_pipeline(char **commands, int num_cmds){
   int fd[2];
   int input_fd = 0; 
   pid_t pids[num_cmds];
@@ -35,7 +35,7 @@ void execute_pipeline(char **commands, int num_cmds){
 
     if(pipe(fd) == -1){
       perror("pipe failed");
-      return;
+      return -1;
     }
 
     char *args[MAX_ARGS];
@@ -56,7 +56,7 @@ void execute_pipeline(char **commands, int num_cmds){
     int pid = fork();
     if(pid == -1){
       perror("fork failed");
-      return;
+      return -1;
     }
 
     if(pid == 0){
@@ -111,17 +111,38 @@ void execute_pipeline(char **commands, int num_cmds){
   if(input_fd != 0){
     close(input_fd);
   }
-  for(int i = 0; i < num_cmds; i++){
-    if(waitpid(pids[i],NULL,0)==-1){
-      if(errno == ECHILD){
-        break;
-      }else{
-        perror("waitpid failed");
+  // for(int i = 0; i < num_cmds; i++){
+  //   if(waitpid(pids[i],NULL,0)==-1){
+  //     if(errno == ECHILD){
+  //       break;
+  //     }else{
+  //       perror("waitpid failed");
+  //     }
+  //   }
+  // }
+  int status = 0;
+  int last_pid_status = 0;
+
+  for(int i = 0;i<num_cmds;i++){
+      if(waitpid(pids[i],&status,0)==-1){
+        if(errno == ECHILD){
+          break;
+        }else{
+          perror("waitpid failed");
+        }
+      }
+
+      if(i == num_cmds - 1){
+        if(WIFEXITED(status)){
+          last_pid_status = WEXITSTATUS(status);
+        }else{
+          last_pid_status = 1;
       }
     }
   }
+    return last_pid_status;
 }
-void execute_command(char **args,char *infile,char *outfile,int append,int background){
+int execute_command(char **args,char *infile,char *outfile,int append,int background){
   pid_t pid = fork();
   if(pid == 0){
 
@@ -155,10 +176,18 @@ void execute_command(char **args,char *infile,char *outfile,int append,int backg
     if(background == 0){
       int status;
       waitpid(pid,&status,0);
+
+      if(WIFEXITED(status)){
+        return WEXITSTATUS(status);
+      }else{
+        return 1;
+      }
     }else{
       printf("Process [%d] started in background.\n",pid);
+      return 0;
     }
   }
+
 }
 
 void handle_signals(int sig){

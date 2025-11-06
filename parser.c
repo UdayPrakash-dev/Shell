@@ -37,13 +37,13 @@ char *trim_whitespace(char *str) {
 
     return str;
 }
-int parse_pipe(char *input, char **commands) {
+int parse_pipe(char *input, char **commands,char **saveptr) {
     int i = 0;
-    char *command = strtok(input, "|");
+    char *command = strtok_r(input, "|",saveptr);
 
     while (command != NULL && i < MAX_PIPE_COMMANDS - 1) {
         commands[i++] = command; 
-        command = strtok(NULL, "|");
+        command = strtok_r(NULL, "|",saveptr);
     }
 
     commands[i] = NULL;
@@ -56,6 +56,7 @@ void parse_command(char *input, char **args, char **infile, char **outfile, int 
     *outfile = NULL;
     *append = 0;
     *background = 0;
+    char *saveptr;
 
     
     char *command = trim_whitespace(input);
@@ -65,13 +66,13 @@ void parse_command(char *input, char **args, char **infile, char **outfile, int 
         return;
     }
 
-    char *token = strtok(command, " ");
+    char *token = strtok_r(command, " ",&saveptr);
     
     while (token != NULL && i < MAX_ARGS - 1)
     {
         if (strcmp(token, "<") == 0)
         {
-            token = strtok(NULL, " "); 
+            token = strtok_r(NULL, " ",&saveptr); 
             if (token != NULL) {
                 *infile = token;
             } else {
@@ -81,7 +82,7 @@ void parse_command(char *input, char **args, char **infile, char **outfile, int 
         }
         else if (strcmp(token, ">") == 0)
         {
-            token = strtok(NULL, " "); 
+            token = strtok_r(NULL, " ",&saveptr); 
             if (token != NULL) {
                 *outfile = token;
                 *append = 0; 
@@ -92,7 +93,7 @@ void parse_command(char *input, char **args, char **infile, char **outfile, int 
         }
         else if (strcmp(token, ">>") == 0)
         {
-            token = strtok(NULL, " "); 
+            token = strtok_r(NULL, " ",&saveptr); 
             if (token != NULL) {
                 *outfile = token;
                 *append = 1;
@@ -107,7 +108,7 @@ void parse_command(char *input, char **args, char **infile, char **outfile, int 
             args[i++] = token;
         }
         
-        token = strtok(NULL, " ");
+        token = strtok_r(NULL, " ",&saveptr);
     }
     args[i] = NULL;
 
