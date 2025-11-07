@@ -181,7 +181,15 @@ static int execute_command_block(char *command_block) {
 static void run_shell_loop(void) {
     char input[MAX_INPUT];
     while (1) {
-        printf("Enigma > ");
+         char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != NULL)
+        {
+          printf("Enigma:%s> ", cwd);
+        }
+        else
+        {
+          perror("getcwd failed");
+        }
         fflush(stdout);
 
         read_command(input);
